@@ -35,3 +35,15 @@ img {
   margin: 0px;
   padding: 0px;
 }
+
+#validation-input {
+  border: 3px solid #bdbdbd;
+}
+
+#validation-input.valid {
+  border-color: #4caf50;
+}
+
+#validation-input.invalid {
+  border-color: #f44336;
+}
