@@ -1,0 +1,23 @@
+{
+  "name": "goit-js-hw-08",
+  "version": "1.0.0",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "description": "Javascript Module 8 Homework",
+  "scripts": {
+    "start": "parcel src/*.html",
+    "build": "parcel build src/*.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Elswortz/goit-js-hw.git"
+  },
+  "author": "Andrii Shkliar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Elswortz/goit-js-hw/issues"
+  },
+  "homepage": "https://github.com/Elswortz/goit-js-hw#readme",
+  "devDependencies": {
+    "parcel": "^2.15.0"
+  }
+}
