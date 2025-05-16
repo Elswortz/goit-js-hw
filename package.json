@@ -19,5 +19,10 @@
   "homepage": "https://github.com/Elswortz/goit-js-hw#readme",
   "devDependencies": {
     "parcel": "^2.15.0"
+  },
+  "dependencies": {
+    "@vimeo/player": "^2.27.1",
+    "lodash.throttle": "^4.1.1",
+    "simplelightbox": "^2.14.3"
   }
 }
