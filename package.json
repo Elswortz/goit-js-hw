@@ -1,8 +1,7 @@
 {
-  "name": "goit-js-hw-08",
+  "name": "goit-js-hw-09",
   "version": "1.0.0",
-  "browserslist": "> 0.5%, last 2 versions, not dead",
-  "description": "Javascript Module 8 Homework",
+  "description": "Javascript Module 9 Homework",
   "scripts": {
     "start": "parcel src/*.html",
     "build": "parcel build src/*.html"
@@ -18,11 +17,10 @@
   },
   "homepage": "https://github.com/Elswortz/goit-js-hw#readme",
   "devDependencies": {
-    "parcel": "^2.15.0"
+    "parcel": "^2.15.1"
   },
   "dependencies": {
-    "@vimeo/player": "^2.27.1",
-    "lodash.throttle": "^4.1.1",
-    "simplelightbox": "^2.14.3"
+    "flatpickr": "^4.6.13",
+    "notiflix": "^3.2.8"
   }
 }

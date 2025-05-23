@@ -1,0 +1,48 @@
+.timer {
+  display: flex;
+  gap: 15px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.value {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+input {
+  width: 250px;
+  text-align: center;
+  font-size: 1.5rem;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 1.5rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
