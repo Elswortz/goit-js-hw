@@ -1,80 +1,98 @@
-import { CatsApiService } from './api/cat-api';
-import SlimSelect from 'slim-select';
+import PixabayApiService from './js/api-service';
+import { renderImages } from './js/render-images';
+
 import Notiflix from 'notiflix';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
-const API = new CatsApiService();
-const selectRef = document.querySelector('.breed-select');
-const infoBlockRef = document.querySelector('.cat-info');
-const loaderRef = document.querySelector('.loader');
-const errorRef = document.querySelector('.error');
+Notiflix.Notify.init({
+  position: 'center-top',
+});
 
-errorRef.hidden = true;
+const form = document.querySelector('.search-form');
+const gallery = document.querySelector('.gallery');
+const taget = document.querySelector('.js-guard');
 
-renderSelectOptions();
-selectRef.addEventListener('change', onSelectChange);
+let options = {
+  root: null,
+  rootMargin: '300px',
+  threshold: 1.0,
+};
 
-function onSelectChange(event) {
-  errorRef.hidden = true;
-  showLoader();
-  const catId = event.currentTarget.value;
+let observer = new IntersectionObserver(onTargetScroll, options);
+const API = new PixabayApiService();
+const simpleBoxGallery = createGalleryInstance();
 
-  infoBlockRef.innerHTML = '';
+form.addEventListener('submit', onFormSubmit);
 
-  Promise.all([API.fetchCatImageByBreed(catId), API.fetchBreedById(catId)])
-    .then(([catImage, catInfo]) => {
-      hideLoader();
-      renderCatImage(catImage[0].url);
-      renderCatInfo(catInfo);
-    })
-    .catch(error => {
-      hideLoader();
-      errorRef.hidden = false;
-      Notiflix.Notify.failure(`${error}`);
-    });
-}
+async function onFormSubmit(event) {
+  try {
+    event.preventDefault();
 
-function renderSelectOptions() {
-  showLoader();
-  selectRef.hidden = true;
-  API.fetchBreeds()
-    .then(cats => {
-      const optionsMarkup = cats.map(
-        ({ id, name }) => `<option value="${id}">${name}</option>`
+    const searchInputValue = event.currentTarget.elements.searchQuery.value;
+    if (searchInputValue === '') {
+      Notiflix.Notify.failure('The field is empty');
+      return;
+    }
+
+    API.query = searchInputValue;
+    API.resetPage();
+    const images = await API.fetchImages();
+
+    if (images.data.totalHits !== 0) {
+      Notiflix.Notify.success(
+        `Success! We found ${images.data.totalHits} images`
       );
-      selectRef.insertAdjacentHTML('beforeend', optionsMarkup.join(''));
-
-      var select = new SlimSelect({
-        select: '#slimselect',
-      });
-
-      selectRef.hidden = false;
-      hideLoader();
-    })
-    .catch(error => {
-      Notiflix.Notify.failure(`${error}`);
-    });
+      gallery.innerHTML = renderImages(images);
+      observer.observe(taget);
+      simpleBoxGallery.refresh();
+    } else {
+      Notiflix.Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+    }
+  } catch (error) {
+    Notiflix.Notify.failure(`${error.message}`);
+  }
 }
 
-function renderCatImage(url) {
-  const markup = `<div class="img-block"><img src="${url}" alt="Cat"></div>`;
-  infoBlockRef.insertAdjacentHTML('beforeend', markup);
+function onTargetScroll(entries, observer) {
+  entries.forEach(async element => {
+    try {
+      if (element.isIntersecting) {
+        const images = await API.fetchImages();
+        gallery.insertAdjacentHTML('beforeend', renderImages(images));
+        simpleBoxGallery.refresh();
+        smoothScroll();
+
+        const totalPages = Math.ceil(images.data.totalHits / 40);
+        const currentPage = API.page - 1;
+
+        if (currentPage >= totalPages) {
+          Notiflix.Notify.info("You've reached the end of search results.");
+          observer.unobserve(taget);
+        }
+      }
+    } catch (error) {
+      Notiflix.Notify.failure(`${error.message}`);
+    }
+  });
 }
 
-function renderCatInfo({ name, description, temperament }) {
-  const markup = `
-  <div class="info-block">
-  <h2 class="Cat__Title">${name}</h2>
-  <p class="Cat__Description">${description}</p>
-  <p class="Cat__Temperamnet">${temperament}</p>
-  </div>
-  `;
-  infoBlockRef.insertAdjacentHTML('beforeend', markup);
+function createGalleryInstance() {
+  return new SimpleLightbox('.gallery a', {
+    captions: true,
+    captionDelay: 250,
+  });
 }
 
-function showLoader() {
-  loaderRef.classList.add('is-visible');
-}
+function smoothScroll() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
 
-function hideLoader() {
-  loaderRef.classList.remove('is-visible');
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
 }
