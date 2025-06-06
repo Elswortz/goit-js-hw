@@ -10,19 +10,24 @@ Notiflix.Notify.init({
 });
 
 const form = document.querySelector('.search-form');
-const loadMoreBtn = document.querySelector('.load-more-btn');
 const gallery = document.querySelector('.gallery');
+const taget = document.querySelector('.js-guard');
 
+let options = {
+  root: null,
+  rootMargin: '300px',
+  threshold: 1.0,
+};
+
+let observer = new IntersectionObserver(onTargetScroll, options);
 const API = new PixabayApiService();
 const simpleBoxGallery = createGalleryInstance();
 
 form.addEventListener('submit', onFormSubmit);
-loadMoreBtn.addEventListener('click', onBtnClick);
 
 async function onFormSubmit(event) {
   try {
     event.preventDefault();
-    loadMoreBtn.classList.add('hidden');
 
     const searchInputValue = event.currentTarget.elements.searchQuery.value;
     if (searchInputValue === '') {
@@ -38,10 +43,9 @@ async function onFormSubmit(event) {
       Notiflix.Notify.success(
         `Success! We found ${images.data.totalHits} images`
       );
-
       gallery.innerHTML = renderImages(images);
+      observer.observe(taget);
       simpleBoxGallery.refresh();
-      loadMoreBtn.classList.remove('hidden');
     } else {
       Notiflix.Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
@@ -52,15 +56,43 @@ async function onFormSubmit(event) {
   }
 }
 
-async function onBtnClick() {
-  const images = await API.fetchImages();
-  gallery.insertAdjacentHTML('beforeend', renderImages(images));
-  simpleBoxGallery.refresh();
+function onTargetScroll(entries, observer) {
+  entries.forEach(async element => {
+    try {
+      if (element.isIntersecting) {
+        const images = await API.fetchImages();
+        gallery.insertAdjacentHTML('beforeend', renderImages(images));
+        simpleBoxGallery.refresh();
+        smoothScroll();
+
+        const totalPages = Math.ceil(images.data.totalHits / 40);
+        const currentPage = API.page - 1;
+
+        if (currentPage >= totalPages) {
+          Notiflix.Notify.info("You've reached the end of search results.");
+          observer.unobserve(taget);
+        }
+      }
+    } catch (error) {
+      Notiflix.Notify.failure(`${error.message}`);
+    }
+  });
 }
 
 function createGalleryInstance() {
   return new SimpleLightbox('.gallery a', {
     captions: true,
     captionDelay: 250,
+  });
+}
+
+function smoothScroll() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
   });
 }
